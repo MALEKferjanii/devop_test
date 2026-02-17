@@ -1,0 +1,228 @@
+╔═══════════════════════════════════════════════════════════════════════════╗
+║                   tpFoyer DevOps Pipeline - Quick Reference               ║
+╚═══════════════════════════════════════════════════════════════════════════╝
+
+┌───────────────────────────────────────────────────────────────────────────┐
+│ 🚀 QUICK START                                                            │
+└───────────────────────────────────────────────────────────────────────────┘
+
+  Windows: Double-click → start-devops.bat
+  
+  Manual:  docker-compose up -d
+
+┌───────────────────────────────────────────────────────────────────────────┐
+│ 🌐 SERVICE URLS                                                           │
+└───────────────────────────────────────────────────────────────────────────┘
+
+  Application     → http://localhost:8082/tpFoyer17
+  Swagger UI      → http://localhost:8082/tpFoyer17/swagger-ui.html
+  Health Check    → http://localhost:8082/tpFoyer17/actuator/health
+  
+  Jenkins         → http://localhost:8080
+  SonarQube       → http://localhost:9000
+  Nexus           → http://localhost:8081
+  Docker Registry → http://localhost:5000
+
+┌───────────────────────────────────────────────────────────────────────────┐
+│ 🔐 INITIAL CREDENTIALS                                                    │
+└───────────────────────────────────────────────────────────────────────────┘
+
+  Jenkins:
+    docker exec jenkins cat /var/jenkins_home/secrets/initialAdminPassword
+  
+  SonarQube:
+    Username: admin
+    Password: admin
+  
+  Nexus:
+    Username: admin
+    docker exec nexus cat /nexus-data/admin.password
+  
+  MySQL (in Kubernetes):
+    Username: root
+    Password: rootpassword
+    Database: tpFoyer17
+
+┌───────────────────────────────────────────────────────────────────────────┐
+│ 📋 ESSENTIAL COMMANDS                                                     │
+└───────────────────────────────────────────────────────────────────────────┘
+
+  Docker Compose:
+    Start all:    docker-compose up -d
+    Stop all:     docker-compose down
+    View logs:    docker-compose logs -f [service]
+    Restart:      docker-compose restart [service]
+    Status:       docker-compose ps
+
+  Kubernetes:
+    Deploy all:   kubectl apply -f k8s/
+    Get pods:     kubectl get pods
+    Get all:      kubectl get all
+    Logs:         kubectl logs -f deployment/tpfoyer-deployment
+    Scale:        kubectl scale deployment/tpfoyer-deployment --replicas=3
+    Delete all:   kubectl delete -f k8s/
+
+  Maven:
+    Compile:      mvn clean compile
+    Test:         mvn test
+    Package:      mvn package
+    SonarQube:    mvn sonar:sonar
+    Deploy:       mvn deploy
+
+  Docker:
+    Build:        docker build -t tpfoyer:latest .
+    Tag:          docker tag tpfoyer:latest localhost:5000/tpfoyer:latest
+    Push:         docker push localhost:5000/tpfoyer:latest
+    Run:          docker run -d -p 8082:8082 tpfoyer:latest
+
+┌───────────────────────────────────────────────────────────────────────────┐
+│ 📊 JENKINS PIPELINE STAGES                                                │
+└───────────────────────────────────────────────────────────────────────────┘
+
+  1. Checkout           → Clone from GitHub
+  2. Compile            → mvn clean compile
+  3. Test               → mvn test
+  4. SonarQube Analysis → Code quality scan
+  5. Quality Gate       → Pass/fail based on quality
+  6. Package            → mvn package (create JAR)
+  7. Deploy to Nexus    → Upload artifact
+  8. Build Docker Image → Create container image
+  9. Push to Registry   → Push image to registry
+  10. Run Container     → Start Docker container
+  11. Deploy to K8s     → Deploy to Kubernetes
+
+┌───────────────────────────────────────────────────────────────────────────┐
+│ 📁 KEY FILES                                                              │
+└───────────────────────────────────────────────────────────────────────────┘
+
+  CI/CD:
+    - Jenkinsfile                 → Complete pipeline definition
+    - docker-compose.yml          → All DevOps services
+    
+  Docker:
+    - Dockerfile                  → Multi-stage build
+    - .dockerignore              → Exclude files from build
+    
+  Kubernetes:
+    - k8s/mysql-pv.yaml          → Persistent storage
+    - k8s/mysql-deployment.yaml  → MySQL deployment
+    - k8s/app-deployment.yaml    → App deployment
+    
+  Configuration:
+    - pom.xml                    → Maven + SonarQube + Nexus
+    - application.properties     → Spring Boot config
+    
+  Documentation:
+    - README.md                  → Main documentation
+    - DEVOPS_SETUP.md           → Detailed setup guide
+    - PIPELINE_SUMMARY.md       → Files and commands summary
+    - k8s/README.md             → Kubernetes guide
+    
+  Scripts:
+    - start-devops.bat          → Start all services
+    - stop-devops.bat           → Stop all services
+
+┌───────────────────────────────────────────────────────────────────────────┐
+│ 🔧 TROUBLESHOOTING                                                        │
+└───────────────────────────────────────────────────────────────────────────┘
+
+  Service not starting:
+    → docker-compose logs [service-name]
+    
+  Port already in use:
+    → Change port in docker-compose.yml
+    
+  Kubernetes pod not running:
+    → kubectl describe pod [pod-name]
+    → kubectl logs [pod-name]
+    
+  Jenkins can't access Docker:
+    → docker exec -u root jenkins chmod 666 /var/run/docker.sock
+    
+  Can't connect to database:
+    → Check MySQL is running: docker ps | grep mysql
+    → Test connection: docker exec -it tpfoyer-mysql mysql -u root -p
+    
+  SonarQube won't start:
+    → Increase Docker memory to 4GB+
+    → Check logs: docker logs sonarqube
+
+┌───────────────────────────────────────────────────────────────────────────┐
+│ ✅ VERIFICATION CHECKLIST                                                 │
+└───────────────────────────────────────────────────────────────────────────┘
+
+  □ Docker Desktop running
+  □ Kubernetes enabled in Docker Desktop
+  □ All services healthy: docker-compose ps
+  □ Jenkins accessible: http://localhost:8080
+  □ SonarQube accessible: http://localhost:9000
+  □ Nexus accessible: http://localhost:8081
+  □ App health check: http://localhost:8082/tpFoyer17/actuator/health
+  □ Kubernetes running: kubectl cluster-info
+  □ Jenkins pipeline created and configured
+  □ GitHub repository connected
+
+┌───────────────────────────────────────────────────────────────────────────┐
+│ 📈 NEXT STEPS                                                             │
+└───────────────────────────────────────────────────────────────────────────┘
+
+  1. Configure Jenkins:
+     - Install plugins (SonarQube, Nexus, Docker, Kubernetes)
+     - Add Nexus credentials
+     - Configure SonarQube server
+     - Create pipeline job pointing to GitHub
+
+  2. Configure SonarQube:
+     - Create project: tpFoyer
+     - Generate token for Jenkins
+     - Set quality gates
+
+  3. Configure Nexus:
+     - Create maven-releases repository
+     - Create maven-snapshots repository
+     - Note credentials for Jenkins
+
+  4. Enable Kubernetes:
+     - Docker Desktop → Settings → Kubernetes → Enable
+     - Wait for Kubernetes to start
+     - Verify: kubectl cluster-info
+
+  5. Deploy to Kubernetes:
+     - kubectl apply -f k8s/mysql-pv.yaml
+     - kubectl apply -f k8s/mysql-deployment.yaml
+     - kubectl apply -f k8s/app-deployment.yaml
+
+  6. Set up GitHub webhook:
+     - GitHub Repo → Settings → Webhooks
+     - Add Jenkins URL
+     - Enable automatic builds
+
+  7. Run first pipeline:
+     - Jenkins → tpFoyer-Pipeline → Build Now
+     - Monitor execution
+     - Verify deployment
+
+┌───────────────────────────────────────────────────────────────────────────┐
+│ 📚 DOCUMENTATION                                                          │
+└───────────────────────────────────────────────────────────────────────────┘
+
+  Detailed setup:      DEVOPS_SETUP.md
+  Kubernetes guide:    k8s/README.md
+  Files summary:       PIPELINE_SUMMARY.md
+  Main README:         README.md
+
+┌───────────────────────────────────────────────────────────────────────────┐
+│ 💡 TIPS                                                                   │
+└───────────────────────────────────────────────────────────────────────────┘
+
+  • Wait 2-3 minutes after starting services before accessing them
+  • Jenkins and Nexus take longer to initialize than other services
+  • Use 'docker-compose logs -f' to monitor service startup
+  • Check health endpoints before running pipelines
+  • Keep Docker Desktop memory allocation at 4GB+ for SonarQube
+  • Use 'kubectl get events --watch' to debug Kubernetes issues
+
+╔═══════════════════════════════════════════════════════════════════════════╗
+║                        Happy DevOps! 🚀                                   ║
+║              For detailed guides, see DEVOPS_SETUP.md                     ║
+╚═══════════════════════════════════════════════════════════════════════════╝
