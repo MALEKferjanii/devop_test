@@ -24,7 +24,7 @@ USER spring:spring
 COPY --from=build /app/target/*.jar app.jar
 
 # Expose application port
-EXPOSE 8082
+EXPOSE 8080
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=60s --retries=3 \
@@ -35,3 +35,8 @@ ENTRYPOINT ["java", "-jar", "app.jar"]
 
 # Optional: Add JVM options for production
 # ENTRYPOINT ["java", "-Xms512m", "-Xmx1024m", "-XX:+UseG1GC", "-jar", "app.jar"]
+FROM openjdk:17-jdk-slim
+WORKDIR /app
+COPY target/*.jar app.jar
+EXPOSE 8080
+ENTRYPOINT ["java", "-jar", "app.jar"]
